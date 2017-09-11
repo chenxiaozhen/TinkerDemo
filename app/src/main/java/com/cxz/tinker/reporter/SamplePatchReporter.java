@@ -3,17 +3,17 @@ package com.cxz.tinker.reporter;
 import android.content.Context;
 import android.content.Intent;
 
-import com.cxz.tinker.utils.UpgradePatchRetry;
 import com.tencent.tinker.lib.reporter.DefaultPatchReporter;
 import com.tencent.tinker.loader.shareutil.SharePatchInfo;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * optional, you can just use DefaultPatchReporter
  */
 public class SamplePatchReporter extends DefaultPatchReporter {
-
+    private final static String TAG = "Tinker.SamplePatchReporter";
     public SamplePatchReporter(Context context) {
         super(context);
     }
@@ -22,12 +22,11 @@ public class SamplePatchReporter extends DefaultPatchReporter {
     public void onPatchServiceStart(Intent intent) {
         super.onPatchServiceStart(intent);
         SampleTinkerReport.onApplyPatchServiceStart();
-        UpgradePatchRetry.getInstance(context).onPatchServiceStart(intent);
     }
 
     @Override
-    public void onPatchDexOptFail(File patchFile, File dexFile, String optDirectory, String dexName, Throwable t) {
-        super.onPatchDexOptFail(patchFile, dexFile, optDirectory, dexName, t);
+    public void onPatchDexOptFail(File patchFile, List<File> dexFiles, Throwable t) {
+        super.onPatchDexOptFail(patchFile, dexFiles, t);
         SampleTinkerReport.onApplyDexOptFail(t);
     }
 
@@ -53,7 +52,6 @@ public class SamplePatchReporter extends DefaultPatchReporter {
     public void onPatchResult(File patchFile, boolean success, long cost) {
         super.onPatchResult(patchFile, success, cost);
         SampleTinkerReport.onApplied(cost, success);
-        UpgradePatchRetry.getInstance(context).onPatchServiceResult();
     }
 
     @Override

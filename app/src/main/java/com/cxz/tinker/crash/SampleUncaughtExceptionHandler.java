@@ -16,11 +16,12 @@ import com.tencent.tinker.loader.shareutil.ShareTinkerInternals;
 /**
  * optional, use dynamic configuration is better way
  * for native crash,
+ * <p/>
+ * Created by zhangshaowen on 16/7/3.
  * tinker's crash is caught by {@code LoadReporter.onLoadException}
  * use {@code TinkerApplicationHelper} api, no need to install tinker!
  */
 public class SampleUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
-
     private static final String TAG = "Tinker.SampleUncaughtExHandler";
 
     private final Thread.UncaughtExceptionHandler ueh;
@@ -47,22 +48,26 @@ public class SampleUncaughtExceptionHandler implements Thread.UncaughtExceptionH
      * If it use Xposed, we can just clean patch or mention user to uninstall it.
      */
     private void tinkerPreVerifiedCrashHandler(Throwable ex) {
+        ApplicationLike applicationLike = TinkerManager.getTinkerApplicationLike();
+        if (applicationLike == null || applicationLike.getApplication() == null) {
+            TinkerLog.w(TAG, "applicationlike is null");
+            return;
+        }
+
+        if (!TinkerApplicationHelper.isTinkerLoadSuccess(applicationLike)) {
+            TinkerLog.w(TAG, "tinker is not loaded");
+            return;
+        }
+
         Throwable throwable = ex;
         boolean isXposed = false;
         while (throwable != null) {
             if (!isXposed) {
                 isXposed = Utils.isXposedExists(throwable);
             }
-            if (isXposed) {
-                //method 1
-                ApplicationLike applicationLike = TinkerManager.getTinkerApplicationLike();
-                if (applicationLike == null || applicationLike.getApplication() == null) {
-                    return;
-                }
 
-                if (!TinkerApplicationHelper.isTinkerLoadSuccess(applicationLike)) {
-                    return;
-                }
+            // xposed?
+            if (isXposed) {
                 boolean isCausedByXposed = false;
                 //for art, we can't know the actually crash type
                 //just ignore art

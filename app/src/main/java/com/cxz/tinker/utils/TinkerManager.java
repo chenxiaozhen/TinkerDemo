@@ -12,13 +12,16 @@ import com.tencent.tinker.lib.reporter.LoadReporter;
 import com.tencent.tinker.lib.reporter.PatchReporter;
 import com.tencent.tinker.lib.tinker.TinkerInstaller;
 import com.tencent.tinker.lib.util.TinkerLog;
+import com.tencent.tinker.lib.util.UpgradePatchRetry;
 import com.tencent.tinker.loader.app.ApplicationLike;
 
+/**
+ * Created by zhangshaowen on 16/7/3.
+ */
 public class TinkerManager {
-
     private static final String TAG = "Tinker.TinkerManager";
 
-    private static ApplicationLike applicationLike;
+    private static ApplicationLike                applicationLike;
     private static SampleUncaughtExceptionHandler uncaughtExceptionHandler;
     private static boolean isInstalled = false;
 
@@ -76,8 +79,8 @@ public class TinkerManager {
         AbstractPatch upgradePatchProcessor = new UpgradePatch();
 
         TinkerInstaller.install(appLike,
-                loadReporter, patchReporter, patchListener,
-                SampleResultService.class, upgradePatchProcessor);
+            loadReporter, patchReporter, patchListener,
+            SampleResultService.class, upgradePatchProcessor);
 
         isInstalled = true;
     }
