@@ -7,23 +7,25 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.multidex.MultiDex;
 
-import com.cxz.tinker.utils.ApplicationContext;
-import com.cxz.tinker.utils.TinkerManager;
 import com.tencent.tinker.anno.DefaultLifeCycle;
+import com.tencent.tinker.lib.tinker.TinkerInstaller;
+import com.tencent.tinker.lib.util.UpgradePatchRetry;
 import com.tencent.tinker.loader.app.DefaultApplicationLike;
 import com.tencent.tinker.loader.shareutil.ShareConstants;
 
 /**
  * Created by chenxz on 2017/9/8.
+ *
+ * 最简单的集成方式
  */
 @DefaultLifeCycle(
-        application = "com.cxz.tinker.SampleApplication",
+        application = "com.cxz.tinker.SampleApplication2",
         flags = ShareConstants.TINKER_ENABLE_ALL,
         loadVerifyFlag = false
 )
-public class SampleApplicationLike extends DefaultApplicationLike {
+public class SampleApplication2Like extends DefaultApplicationLike {
 
-    public SampleApplicationLike(Application application, int tinkerFlags, boolean tinkerLoadVerifyFlag, long applicationStartElapsedTime, long applicationStartMillisTime, Intent tinkerResultIntent) {
+    public SampleApplication2Like(Application application, int tinkerFlags, boolean tinkerLoadVerifyFlag, long applicationStartElapsedTime, long applicationStartMillisTime, Intent tinkerResultIntent) {
         super(application, tinkerFlags, tinkerLoadVerifyFlag, applicationStartElapsedTime, applicationStartMillisTime, tinkerResultIntent);
     }
 
@@ -39,24 +41,15 @@ public class SampleApplicationLike extends DefaultApplicationLike {
         super.onBaseContextAttached(base);
 
         initTinker(base);
+
     }
 
-    /**
-     * 初始化Tinker
-     * @param base
-     */
     private void initTinker(Context base) {
         //必须安装MultiDex的更新!
         MultiDex.install(base);
         //安装Tinker后加载multiDex
-        TinkerManager.installTinker(this);
-
-        ApplicationContext.application = getApplication();
-        ApplicationContext.context = getApplication();
-
-        TinkerManager.setTinkerApplicationLike(this);
-        TinkerManager.initFastCrashProtect();
-        TinkerManager.setUpgradeRetryEnable(true);
+        TinkerInstaller.install(this);
+        UpgradePatchRetry.getInstance(this.getApplication()).setRetryEnable(true);
     }
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
