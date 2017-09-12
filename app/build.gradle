@@ -87,11 +87,11 @@ def bakPath = file("${buildDir}/bakApk/")
 ext {
     tinkerEnabled = true
     // 基础版本apk
-    tinkerOldApkPath = "${bakPath}/app-debug-20170912-10-25-42.apk"
+    tinkerOldApkPath = "${bakPath}/app-debug-20170912-11-15-26.apk"
     //proguard mapping file to build patch apk
     tinkerApplyMappingPath = "${bakPath}/"
     // 与基础版本一起生成的R.text文件
-    tinkerApplyResourcePath = "${bakPath}/app-debug-20170912-10-25-42-R.txt"
+    tinkerApplyResourcePath = "${bakPath}/app-debug-20170912-11-15-26-R.txt"
     //only use for build all flavor, if not, just ignore this field
     tinkerBuildFlavorDirectory = "${bakPath}/"
 

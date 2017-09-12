@@ -1,16 +1,21 @@
 package com.cxz.tinker.service;
 
+import android.app.ActivityManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
 
-import com.cxz.tinker.utils.Utils;
 import com.tencent.tinker.lib.service.DefaultTinkerResultService;
 import com.tencent.tinker.lib.service.PatchResult;
 import com.tencent.tinker.lib.util.TinkerLog;
 import com.tencent.tinker.lib.util.TinkerServiceInternals;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * optional, you can just use DefaultTinkerResultService
@@ -49,14 +54,14 @@ public class SampleResultService extends DefaultTinkerResultService {
             //not like TinkerResultService, I want to restart just when I am at background!
             //if you have not install tinker this moment, you can use TinkerApplicationHelper api
             if (checkIfNeedKill(result)) {
-                if (Utils.isBackground()) {
+                if (isBackground(this)) {
                     TinkerLog.i(TAG, "it is in background, just restart process");
                     restartProcess();
                 } else {
                     //we can wait process at background, such as onAppBackground
                     //or we can restart when the screen off
                     TinkerLog.i(TAG, "tinker wait screen to restart process");
-                    new Utils.ScreenState(getApplicationContext(), new Utils.ScreenState.IOnScreenOff() {
+                    new ScreenState(getApplicationContext(), new ScreenState.IOnScreenOff() {
                         @Override
                         public void onScreenOff() {
                             restartProcess();
@@ -76,6 +81,47 @@ public class SampleResultService extends DefaultTinkerResultService {
         TinkerLog.i(TAG, "app is background now, i can kill quietly");
         //you can send service or broadcast intent to restart your process
         android.os.Process.killProcess(android.os.Process.myPid());
+    }
+
+    public static class ScreenState {
+        public interface IOnScreenOff {
+            void onScreenOff();
+        }
+
+        public ScreenState(final Context context, final IOnScreenOff onScreenOffInterface) {
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(Intent.ACTION_SCREEN_OFF);
+
+            context.registerReceiver(new BroadcastReceiver() {
+
+                @Override
+                public void onReceive(Context context, Intent in) {
+                    String action = in == null ? "" : in.getAction();
+                    TinkerLog.i(TAG, "ScreenReceiver action [%s] ", action);
+                    if (Intent.ACTION_SCREEN_OFF.equals(action)) {
+                        if (onScreenOffInterface != null) {
+                            onScreenOffInterface.onScreenOff();
+                        }
+                    }
+                    context.unregisterReceiver(this);
+                }
+            }, filter);
+        }
+    }
+
+    private boolean isBackground(Context context) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
+        for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
+            if (appProcess.processName.equals(context.getPackageName())) {
+                if (appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_BACKGROUND) {
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 
 }
